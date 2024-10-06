@@ -8,6 +8,9 @@ from .models import Task
 from .serializers import TaskSerializer, UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from .permissions import IsOwnerOrAdminOrReadOnly
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+from rest_framework.exceptions import ValidationError
 
 
 # Task ViewSet
@@ -50,6 +53,10 @@ class CurrentUserView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 
+class UsersView(generics.ListCreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    
 class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdminOrReadOnly]
@@ -61,4 +68,44 @@ class TaskViewSet(viewsets.ModelViewSet):
         return Task.objects.filter(user=self.request.user).order_by('-created_at')
     
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        # Check if the user is an admin
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            user_id = self.request.data.get('assigned_user', None)  # Get the assigned user ID from the request
+            if user_id:
+                User = get_user_model()
+                try:
+                    user = User.objects.get(id=user_id)
+                    serializer.save(user=user)  # Save the task with the assigned user
+                except User.DoesNotExist:
+                    raise ValidationError({"assigned_user": "Assigned user does not exist."})
+            else:
+                raise ValidationError({"assigned_user": "Assigned user ID must be provided."})
+        else:
+            # For regular users, save the task with the authenticated user
+            serializer.save(user=self.request.user)
+
+
+@api_view(['GET'])
+def task_statistics(request):
+    # Check if the user is a superuser
+    if request.user.is_superuser:
+        # If the user is a superuser, get all tasks
+        completed_tasks = Task.objects.filter(status='DONE').count()
+        pending_tasks = Task.objects.filter(status='TODO').count()
+        in_progress_tasks = Task.objects.filter(status='IN_PROGRESS').count()
+        overdue_tasks = Task.objects.filter(due_date__lt=timezone.now()).count()
+    else:
+        # If the user is not a superuser, filter tasks by user
+        completed_tasks = Task.objects.filter(status='DONE', user=request.user).count()
+        pending_tasks = Task.objects.filter(status='TODO', user=request.user).count()
+        in_progress_tasks = Task.objects.filter(status='IN_PROGRESS', user=request.user).count()
+        overdue_tasks = Task.objects.filter(due_date__lt=timezone.now(), user=request.user).count()
+
+    data = {
+        'completed_tasks': completed_tasks,
+        'pending_tasks': pending_tasks,
+        'in_progress_tasks': in_progress_tasks,
+        'overdue_tasks': overdue_tasks
+    }
+
+    return Response(data)

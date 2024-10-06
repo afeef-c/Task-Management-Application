@@ -9,12 +9,13 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ['id', 'title', 'description', 'status', 'created_at', 'updated_at', 'user']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = ['id', 'title', 'description', 'status', 'created_at', 'updated_at', 'due_date', 'completed_at', 'user']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'completed_at']
+
 
 class UserSerializer(serializers.ModelSerializer):
     tasks = TaskSerializer(many=True, read_only=True) 
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'tasks']
+        fields = ['id', 'username', 'is_staff', 'is_superuser', 'tasks']  

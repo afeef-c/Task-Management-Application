@@ -16,4 +16,7 @@ redis==5.1.0
 sqlparse==0.5.1
 tzdata==2024.2
 daphne>=4.0
+pyOpenSSL==24.2.1
+whitenoise==6.4.0  # or the latest version you're using
+dj-database-url
 

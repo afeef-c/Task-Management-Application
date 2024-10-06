@@ -92,6 +92,9 @@ SIMPLE_JWT = {
 }
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
+    'https://task-management-application-kvvw.onrender.com',
+    'https://taskmanager-wfqi.onrender.com'
+
 ]
 
 

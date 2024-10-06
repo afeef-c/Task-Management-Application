@@ -69,6 +69,11 @@ export const fetchUserDetails = createAsyncThunk('auth/fetchUserDetails', async 
   }
 });
 
+export const fetchUsers = createAsyncThunk('auth/fetchUsers', async () => {
+  const response = await api.get('/users_list/');
+  const usersData = response.data;
+  return usersData;
+});
 
 const authSlice = createSlice({
   name: 'auth',
@@ -78,6 +83,7 @@ const authSlice = createSlice({
       refresh: localStorage.getItem(REFRESH_TOKEN)
     } : null,
     user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
+    users: {},
     loading: false,
     error: null
   },
@@ -125,6 +131,23 @@ const authSlice = createSlice({
       .addCase(fetchUserDetails.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      .addCase(fetchUsers.pending, (state) => {
+        state.error = null;
+        state.loading = true
+      })
+      .addCase(fetchUsers.fulfilled, (state, action) => {
+          state.status = 'succeeded';
+          state.users = action.payload.reduce((acc, user) => {
+              acc[user.id] = user;
+              return acc;
+          }, {});
+          state.loading = false
+      })
+      .addCase(fetchUsers.rejected, (state, action) => {
+          state.loading = false;
+          state.error = action.error.message;
       });
   }
 });

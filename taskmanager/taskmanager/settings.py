@@ -17,7 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-awjxfx9tdboxv(d$p#74=vuamt)m_%)cj)q&t43l7*urn8a1g2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -95,6 +95,9 @@ CORS_ALLOWED_ORIGINS = [
     'https://task-management-application-kvvw.onrender.com',
     'https://taskmanager-wfqi.onrender.com'
 
+]
+CSRF_TRUSTED_ORIGINS = [
+    'https://taskmanager-wfqi.onrender.com',  # Add your Render domain here
 ]
 
 

@@ -49,7 +49,6 @@ RUN chmod +x /entrypoint.sh
 
 # Expose necessary ports
 EXPOSE 8000  
-EXPOSE 80    
 
 
 # Set the entrypoint

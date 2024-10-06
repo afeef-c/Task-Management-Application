@@ -19,11 +19,15 @@ SECRET_KEY = 'django-insecure-awjxfx9tdboxv(d$p#74=vuamt)m_%)cj)q&t43l7*urn8a1g2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+WHITENOISE_USE_FINDERS = True  # Automatically finds static files in static directories
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -44,6 +48,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Ensure this is at the top
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add whitenoise for handling static files
+    
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -104,17 +110,15 @@ DATABASES = {
     }
 }
 
-
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            # "hosts": [('localhost', 6379)],
-            "hosts": [("127.0.0.1", 6379)],  # Use localhost for local Redis
-
+            "hosts":  [os.getenv('REDIS_URL')],
         },
     },
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

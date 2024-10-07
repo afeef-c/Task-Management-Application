@@ -7,7 +7,8 @@ import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
   const [userData, setUserData] = useState({ username: '', password: '' });
-  const { loading, error } = useSelector((state) => state.auth); // Accessing loading and error from Redux state
+  const {  error } = useSelector((state) => state.auth); // Accessing loading and error from Redux state
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const navigate = useNavigate()
   const handleChange = (e) => {
@@ -16,22 +17,31 @@ const Register = () => {
 
   const handleRegister = async (e) => {
       e.preventDefault(); // Prevent the default form submission
+      setLoading(true)
       try {
           const response = await api.post('/register/', userData);
           toast.success(response.data.message);
           navigate('/login'); // Redirect to the login page on success
+          setLoading(false)
           setUserData({ username: '', password: '' }); // Reset the input fields
       } catch (error) {
           const errorResponse = error.response?.data?.detail || error.response?.data?.username || 'An error occurred during registration.'; 
-        
+          setLoading(false)
+          
           // Handle specific error when user already exists
           if (error.response?.data?.username) {
               toast.error('User already exists.');
+              setLoading(false)
+          
           } else {
               toast.error(errorResponse);
+              setLoading(false)
+          
           }
 
           setMessage(errorResponse); // Set the error message in the state for display
+          setLoading(false)
+          
       }
   };
 

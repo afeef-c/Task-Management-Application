@@ -19,6 +19,7 @@ function App() {
             dispatch(fetchUserDetails());
         }
     }, [authTokens, dispatch]);
+    
 
     return (
         <Router>

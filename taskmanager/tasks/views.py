@@ -93,19 +93,23 @@ def task_statistics(request):
         completed_tasks = Task.objects.filter(status='DONE').count()
         pending_tasks = Task.objects.filter(status='TODO').count()
         in_progress_tasks = Task.objects.filter(status='IN_PROGRESS').count()
-        overdue_tasks = Task.objects.filter(due_date__lt=timezone.now()).count()
+        overdue_tasks = Task.objects.filter(status='OVERDUE').count()
     else:
         # If the user is not a superuser, filter tasks by user
         completed_tasks = Task.objects.filter(status='DONE', user=request.user).count()
         pending_tasks = Task.objects.filter(status='TODO', user=request.user).count()
         in_progress_tasks = Task.objects.filter(status='IN_PROGRESS', user=request.user).count()
-        overdue_tasks = Task.objects.filter(due_date__lt=timezone.now(), user=request.user).count()
-
+        overdue_tasks = Task.objects.filter(status='OVERDUE', user=request.user).count()
+        
     data = {
         'completed_tasks': completed_tasks,
         'pending_tasks': pending_tasks,
         'in_progress_tasks': in_progress_tasks,
-        'overdue_tasks': overdue_tasks
+        'overdue_tasks': overdue_tasks,
+        
     }
 
     return Response(data)
+
+
+

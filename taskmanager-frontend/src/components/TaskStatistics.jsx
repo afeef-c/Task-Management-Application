@@ -36,7 +36,7 @@ const TaskStatistics = () => {
                     stats.completed_tasks,
                     stats.pending_tasks,
                     stats.in_progress_tasks,
-                    stats.overdue_tasks
+                    // stats.overdue_tasks
                 ] : [0, 0, 0, 0],
                 backgroundColor: ['#4caf50', '#ffeb3b', '#03a9f4', '#f44336'], // Colors for the pie chart slices
                 hoverOffset: 4,

@@ -1,31 +1,23 @@
-#!/bin/sh
+#!/bin/bash
 
-# Wait for the database to be ready
-if [ "$DATABASE" = "postgres" ]
-then
-    echo "Waiting for postgres..."
+# Exit immediately if a command exits with a non-zero status
+set -e
 
-    while ! nc -z $SQL_HOST $SQL_PORT; do
-      sleep 0.1
-    done
+# Wait for PostgreSQL to become available
+echo "Waiting for PostgreSQL to start..."
+while ! nc -z db 5432; do
+  sleep 0.1
+done
+echo "PostgreSQL started!"
 
-    echo "PostgreSQL started"
-fi
-
-# Run migrations and collect static files
-echo "Running migrations..."
+# Apply Django migrations
+echo "Applying migrations..."
 /py/bin/python manage.py migrate
 
-# Collect static files if needed
-echo "Collecting static files..."
-/py/bin/python manage.py collectstatic --noinput
+# Start Daphne (ASGI server) to serve Django and Channels
+echo "Starting Daphne..."
+daphne -u /tmp/daphne.sock taskmanager.asgi:application &
 
-# Start Nginx in the background
+# Start Nginx
 echo "Starting Nginx..."
-nginx &
-
-# Start the taskmanager server (Daphne or Gunicorn)
-/py/bin/daphne -b 0.0.0.0 -p 8000 taskmanager.asgi:application
-
-# Alternatively, if using Gunicorn, you can replace the above line with:
-# /py/bin/gunicorn your_project.wsgi:application --bind 0.0.0.0:8000
+nginx -g "daemon off;"

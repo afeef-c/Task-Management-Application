@@ -128,22 +128,22 @@ DATABASES = {
     
 # }
 
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             "hosts": [os.getenv('REDIS_URL')],
-#         },
-#     },
-# }
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',  # Use Redis as the channel layer backend
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('localhost', 6379)],  # Adjust the host and port as per your Redis configuration
+            "hosts": [os.getenv('REDIS_URL')],
         },
     },
 }
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',  # Use Redis as the channel layer backend
+#         'CONFIG': {
+#             'hosts': [('localhost', 6379)],  # Adjust the host and port as per your Redis configuration
+#         },
+#     },
+# }
 
 
 # Password validation

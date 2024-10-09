@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-
+from channels.db import database_sync_to_async
 
 
 # User Registration View
@@ -49,6 +49,7 @@ class UsersView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
+
 class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdminOrReadOnly]
@@ -92,6 +93,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         # Then delete the task
         instance.delete()
 
+    @database_sync_to_async
     def send_task_update(self, task, action):
         # Get the channel layer
         channel_layer = get_channel_layer()
@@ -114,7 +116,6 @@ class TaskViewSet(viewsets.ModelViewSet):
                 'message': task_data
             }
         )
-
 
 @api_view(['GET'])
 def task_statistics(request):

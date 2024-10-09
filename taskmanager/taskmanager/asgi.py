@@ -13,6 +13,9 @@ from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from tasks.routing import websocket_urlpatterns
+# Now import JWTAuthMiddleware to avoid AppRegistryNotReady error
+from tasks.channels_middleware import JWTAuthMiddleware
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'taskmanager.settings')
 
@@ -20,9 +23,10 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'taskmanager.settings')
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
-    "websocket": AuthMiddlewareStack(
+    "websocket": JWTAuthMiddleware(AuthMiddlewareStack(
         URLRouter(
             websocket_urlpatterns
-        )
+        ))
     ),
 })
+

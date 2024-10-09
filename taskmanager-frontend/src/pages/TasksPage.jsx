@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import TaskList from '../components/TaskList';
 import TaskForm from '../components/TaskForm';
-import Logout from '../components/Logout';
 
 const TasksPage = () => {
     const [taskToEdit, setTaskToEdit] = useState(null);

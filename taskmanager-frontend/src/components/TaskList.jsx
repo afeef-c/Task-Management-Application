@@ -23,21 +23,39 @@ const TaskList = ({ onEdit }) => {
     }, [authTokens, dispatch]);
 
     useEffect(() => {
-        // Dispatch action to fetch tasks on component mount
-        dispatch(fetchTasks());
-
-        // WebSocket connection for real-time updates
-        const socket = connectWebSocket();
-        socket.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            if (message.type === 'task.created') {
-                dispatch(fetchTasks()); // Refetch tasks on creation
-            }
+        const connect = () => {
+            const socket = connectWebSocket();
+    
+            socket.onopen = () => {
+                console.log('WebSocket connection established');
+            };
+    
+            socket.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                // Handle messages...
+            };
+    
+            socket.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+    
+            socket.onclose = (event) => {
+                console.log('WebSocket connection closed, attempting to reconnect...');
+                setTimeout(connect, 1000); // Attempt to reconnect after 1 second
+            };
+    
+            return socket;
         };
-
-        return () => socket.close();
+    
+        const socket = connect();
+    
+        return () => {
+            console.log('Closing WebSocket...');
+            socket.close();
+        };
     }, [dispatch]);
-
+    
+    
     // Handle task deletion
     const handleDelete = async (id) => {
         dispatch(deleteTask(id));

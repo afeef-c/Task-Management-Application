@@ -1,5 +1,5 @@
 from urllib.parse import parse_qs
-from channels.middleware.base import BaseMiddleware
+from channels.middleware import BaseMiddleware
 from channels.db import database_sync_to_async
 from rest_framework_simplejwt.tokens import UntypedToken
 from django.contrib.auth import get_user_model

@@ -11,18 +11,10 @@ from .permissions import IsOwnerOrAdminOrReadOnly
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
-# Task ViewSet
-# class TaskViewSet(viewsets.ModelViewSet):
-#     serializer_class = TaskSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     def get_queryset(self):
-#         return Task.objects.filter(user=self.request.user).order_by('-created_at')
-
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user)
 
 # User Registration View
 @api_view(['POST'])
@@ -66,7 +58,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         if self.request.user.is_staff or self.request.user.is_superuser:
             return Task.objects.all().order_by('-created_at')
         return Task.objects.filter(user=self.request.user).order_by('-created_at')
-    
+
     def perform_create(self, serializer):
         # Check if the user is an admin
         if self.request.user.is_staff or self.request.user.is_superuser:
@@ -75,14 +67,53 @@ class TaskViewSet(viewsets.ModelViewSet):
                 User = get_user_model()
                 try:
                     user = User.objects.get(id=user_id)
-                    serializer.save(user=user)  # Save the task with the assigned user
+                    task = serializer.save(user=user)  # Save the task with the assigned user
                 except User.DoesNotExist:
                     raise ValidationError({"assigned_user": "Assigned user does not exist."})
             else:
                 raise ValidationError({"assigned_user": "Assigned user ID must be provided."})
         else:
             # For regular users, save the task with the authenticated user
-            serializer.save(user=self.request.user)
+            task = serializer.save(user=self.request.user)
+
+        # Notify WebSocket consumers about the new task
+        self.send_task_update(task, 'created')
+
+    def perform_update(self, serializer):
+        task = serializer.save()  # Save the updated task
+
+        # Notify WebSocket consumers about the task update
+        self.send_task_update(task, 'updated')
+
+    def perform_destroy(self, instance):
+        # Notify WebSocket consumers about task deletion
+        self.send_task_update(instance, 'deleted')
+
+        # Then delete the task
+        instance.delete()
+
+    def send_task_update(self, task, action):
+        # Get the channel layer
+        channel_layer = get_channel_layer()
+
+        # Prepare the task data to send via WebSocket
+        task_data = {
+            'id': task.id,
+            'title': task.title,
+            'description': task.description,
+            'completed': task.completed,
+            'user': task.user.username,
+            'action': action,  # 'created', 'updated', or 'deleted'
+        }
+
+        # Send task update to WebSocket group 'tasks'
+        async_to_sync(channel_layer.group_send)(
+            'tasks',
+            {
+                'type': 'task_update',  # This corresponds to the 'task_update' method in TaskConsumer
+                'message': task_data
+            }
+        )
 
 
 @api_view(['GET'])

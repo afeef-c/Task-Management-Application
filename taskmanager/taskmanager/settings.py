@@ -93,12 +93,15 @@ SIMPLE_JWT = {
 }
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
+    'http://localhost:8000',
     'https://task-management-application-kvvw.onrender.com',
     'https://taskmanager-wfqi.onrender.com'
 
 ]
 CSRF_TRUSTED_ORIGINS = [
     'https://taskmanager-wfqi.onrender.com',  # Add your Render domain here
+    'https://localhost:8000',
+
 ]
 
 
@@ -133,6 +136,14 @@ CHANNEL_LAYERS = {
         },
     },
 }
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',  # Use Redis as the channel layer backend
+#         'CONFIG': {
+#             'hosts': [('redis', 6379)],  # Adjust the host and port as per your Redis configuration
+#         },
+#     },
+# }
 
 
 # Password validation

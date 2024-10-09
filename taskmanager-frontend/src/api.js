@@ -19,7 +19,7 @@ api.interceptors.request.use(
 )
 
 export const connectWebSocket = () => {
-    const socket = new WebSocket(import.meta.env.VITE_WS_URL || "ws://localhost:8000/api/ws/tasks/");
+    const socket = new WebSocket(import.meta.env.VITE_WS_URL || "ws://localhost:8000/ws/tasks/");
     return socket;
 };
 

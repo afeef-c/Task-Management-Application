@@ -41,6 +41,10 @@ RUN mkdir -p /media
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Collect static files (assuming AWS S3 or similar is configured in Django settings)
+# Using ARG to set SECRET_KEY
+ARG SECRET_KEY
+ENV SECRET_KEY=${SECRET_KEY}  # Pass SECRET_KEY as an environment variable
+
 RUN /py/bin/python manage.py collectstatic --noinput
 
 # Copy the entrypoint script and make it executable
@@ -49,7 +53,6 @@ RUN chmod +x /entrypoint.sh
 
 # Expose necessary ports
 EXPOSE 8000  
-
 
 # Set the entrypoint
 ENTRYPOINT ["/entrypoint.sh"]

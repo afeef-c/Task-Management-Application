@@ -6,6 +6,8 @@ import { fetchUserDetails } from '../authSlice';
 import TaskStatistics from './TaskStatistics';
 import ErrorBoundary from './ErrorBoundary';
 import { useNavigate } from 'react-router-dom';
+import { addTask, updateTaskWS, removeTask } from '../taskSlice';
+import { toast } from 'react-toastify';
 
 const TaskList = ({ onEdit }) => {
     const dispatch = useDispatch();
@@ -19,46 +21,46 @@ const TaskList = ({ onEdit }) => {
     useEffect(() => {
         if (authTokens) {
             dispatch(fetchUserDetails());
+            dispatch(fetchTasks())
         }
     }, [authTokens, dispatch]);
 
     useEffect(() => {
-        const connect = () => {
-            const socket = connectWebSocket();
-    
-            socket.onopen = () => {
-                console.log('WebSocket connection established');
-            };
-    
-            socket.onmessage = (event) => {
-                const message = JSON.parse(event.data);
-                // Handle messages...
-            };
-    
-            socket.onerror = (error) => {
-                console.error('WebSocket error:', error);
-            };
-    
-            socket.onclose = (event) => {
-                console.log('WebSocket connection closed, attempting to reconnect...');
-                setTimeout(connect, 1000); // Attempt to reconnect after 1 second
-            };
-    
-            return socket;
+        // Establish WebSocket connection
+        const socket = connectWebSocket()
+        // new WebSocket('ws://localhost:8000/ws/tasks/'); // Update with your WebSocket URL
+
+        // Handle incoming WebSocket messages
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log('WebSocket message received: ', event.data);
+            // Handle different task events
+            if (data.action === 'create') {
+                dispatch(addTask(data.task)); // Add the new task to Redux state
+            } else if (data.action === 'update') {
+                dispatch(updateTaskWS(data.task)); // Update the existing task in Redux state
+            } else if (data.action === 'delete') {
+                dispatch(removeTask(data.task_id)); // Remove the task from Redux state
+            }
         };
-    
-        const socket = connect();
-    
+
+        // Cleanup WebSocket connection on component unmount
         return () => {
-            console.log('Closing WebSocket...');
             socket.close();
         };
     }, [dispatch]);
-    
+
     
     // Handle task deletion
     const handleDelete = async (id) => {
-        dispatch(deleteTask(id));
+        const confirmDelete = window.confirm("Are you sure you want to delete this task?");
+        if (confirmDelete) {
+            // Dispatch the delete action
+            await dispatch(deleteTask(id));
+    
+            // Show a success toast message
+            toast.success("Task deleted successfully!");
+        }
     };
 
     // Get current date to compare with due dates

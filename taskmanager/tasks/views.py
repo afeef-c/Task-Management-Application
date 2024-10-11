@@ -50,72 +50,77 @@ class UsersView(generics.ListCreateAPIView):
     serializer_class = UserSerializer
     
 
+
 class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdminOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Check if the user is an admin
+        # Admins see all tasks, users see their own
         if self.request.user.is_staff or self.request.user.is_superuser:
             return Task.objects.all().order_by('-created_at')
         return Task.objects.filter(user=self.request.user).order_by('-created_at')
-
+    
     def perform_create(self, serializer):
-        # Check if the user is an admin
         if self.request.user.is_staff or self.request.user.is_superuser:
-            user_id = self.request.data.get('assigned_user', None)  # Get the assigned user ID from the request
+            user_id = self.request.data.get('assigned_user', None)
             if user_id:
                 User = get_user_model()
                 try:
                     user = User.objects.get(id=user_id)
-                    task = serializer.save(user=user)  # Save the task with the assigned user
+                    task = serializer.save(user=user)
                 except User.DoesNotExist:
                     raise ValidationError({"assigned_user": "Assigned user does not exist."})
             else:
                 raise ValidationError({"assigned_user": "Assigned user ID must be provided."})
         else:
-            # For regular users, save the task with the authenticated user
             task = serializer.save(user=self.request.user)
 
-        # Notify WebSocket consumers about the new task
-        self.send_task_update(task, 'created')
+        # Send WebSocket message for task creation
+        self.send_task_update('create', task)
 
     def perform_update(self, serializer):
-        task = serializer.save()  # Save the updated task
-
-        # Notify WebSocket consumers about the task update
-        self.send_task_update(task, 'updated')
+        task = serializer.save()
+        # Send WebSocket message for task update
+        self.send_task_update('update', task)
 
     def perform_destroy(self, instance):
-        # Notify WebSocket consumers about task deletion
-        self.send_task_update(instance, 'deleted')
-
-        # Then delete the task
+        task_id = instance.id
         instance.delete()
+        # Send WebSocket message for task deletion
+        self.send_task_update('delete', task_id)
 
-    @database_sync_to_async
-    def send_task_update(self, task, action):
-        # Get the channel layer
+    def send_task_update(self, action, task):
+        # Set up the channel layer for WebSocket communication
         channel_layer = get_channel_layer()
 
-        # Prepare the task data to send via WebSocket
-        task_data = {
-            'id': task.id,
-            'title': task.title,
-            'description': task.description,
-            'completed': task.completed,
-            'user': task.user.username,
-            'action': action,  # 'created', 'updated', or 'deleted'
-        }
-
-        # Send task update to WebSocket group 'tasks'
-        async_to_sync(channel_layer.group_send)(
-            'tasks',
-            {
-                'type': 'task_update',  # This corresponds to the 'task_update' method in TaskConsumer
-                'message': task_data
+        # Prepare the WebSocket message
+        if action != 'delete':
+            message = {
+                'type': f'task.{action}',
+                'task': {
+                    'id': task.id,
+                    'title': task.title,
+                    'description': task.description,
+                    'status': task.status,
+                    'created_at': task.created_at.isoformat(),
+                    'updated_at': task.updated_at.isoformat(),
+                    'due_date': task.due_date.isoformat() if task.due_date else None,
+                    'completed_at': task.completed_at.isoformat() if task.completed_at else None,
+                }
             }
-        )
+        else:
+            message = {
+                'type': 'task.deleted',
+                'task_id': task  # Only need the task ID for deletion
+            }
+
+        # Broadcast the message to the WebSocket group 'task_updates'
+        async_to_sync(channel_layer.group_send)('task_updates', {
+            'type': 'task_update',
+            'message': message
+        })
+
 
 @api_view(['GET'])
 def task_statistics(request):

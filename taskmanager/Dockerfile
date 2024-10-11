@@ -22,33 +22,34 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     nginx \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements.txt to leverage Docker cache
+# Copy requirements.txt first to leverage Docker cache
 COPY ./requirements.txt /requirements.txt
 
 # Install Python dependencies in the virtual environment
 RUN /py/bin/pip install -r /requirements.txt
 
-# Set the working directory to /taskmanager
+# Set working directory to /taskmanager
 WORKDIR /taskmanager
 
 # Copy application code into /taskmanager
 COPY . .
 
-# Create media and static directories if they don't exist
-RUN mkdir -p /media /static
+# Create media directory if it doesn't exist
+RUN mkdir -p /media
 
 # Copy Nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Collect static files
+# Collect static files (assuming AWS S3 or similar is configured in Django settings)
 RUN /py/bin/python manage.py collectstatic --noinput
 
 # Copy the entrypoint script and make it executable
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Expose necessary ports (both for HTTP and Daphne WebSocket server)
-EXPOSE 8000 80
+# Expose necessary ports
+EXPOSE 8000  
+
 
 # Set the entrypoint
 ENTRYPOINT ["/entrypoint.sh"]

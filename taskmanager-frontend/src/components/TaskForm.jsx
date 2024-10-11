@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createTask, updateTask } from '../taskSlice';
 import { fetchUserDetails, fetchUsers } from '../authSlice';
+import { addTask, updateTaskWS, removeTask } from '../taskSlice';
+import { connectWebSocket } from '../api';
+import { toast } from 'react-toastify';
 
 const TaskForm = ({ taskToEdit, onTaskCreated }) => {
     const dispatch = useDispatch();
@@ -46,6 +49,33 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
         }
     }, [taskToEdit]);
 
+    useEffect(() => {
+        // Establish WebSocket connection
+        const socket = connectWebSocket()
+
+        // const socket = new WebSocket('ws://localhost:8000/ws/tasks/'); // Update with your WebSocket URL
+
+        // Handle incoming WebSocket messages
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log('WebSocket message received: ', event.data);
+            // Handle different task events
+            if (data.type === 'task.create') {
+                dispatch(addTask(data.task)); // Add the new task to Redux state
+            } else if (data.type === 'task.update') {
+                dispatch(updateTaskWS(data.task)); // Update the existing task in Redux state
+            } else if (data.type === 'task.delete') {
+                dispatch(removeTask(data.task_id)); // Remove the task from Redux state
+            }
+        };
+
+        // Cleanup WebSocket connection on component unmount
+        return () => {
+            socket.close();
+        };
+    }, [dispatch]);
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const task = { title, description, status, due_date: dueDate || null, assigned_user: assignedUser }; // Use 'due_date'
@@ -59,7 +89,12 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
 
         if (createTask.fulfilled.match(resultAction) || updateTask.fulfilled.match(resultAction)) {
             onTaskCreated(resultAction.payload);
-
+            if (!taskToEdit) {
+                toast.success("Task created successfully!");
+            } else {
+                toast.success("Task updated successfully!");
+            }
+            // Reset form logic...
             // Reset form if a new task was created
             if (!taskToEdit) {
                 setTitle('');
@@ -68,7 +103,11 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
                 setAssignedUser('');
                 setDueDate(''); // Reset due date after task creation
             }
-        }
+        } else if (resultAction.error) {
+            toast.error("Failed to save task. Please try again.");
+        }    
+            
+        
     };
 
     // Filter out admin users from the list

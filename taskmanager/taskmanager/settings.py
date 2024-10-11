@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-awjxfx9tdboxv(d$p#74=vuamt)m_%)cj)q&t43l7*urn8a1g2'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -93,6 +93,7 @@ SIMPLE_JWT = {
 }
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
+    'http://127.0.0.1:5173',
     'http://localhost:8000',
     'https://task-management-application-kvvw.onrender.com',
     'https://taskmanager-wfqi.onrender.com'
@@ -121,12 +122,6 @@ DATABASES = {
 }
 
 
-# DATABASES = {
-#     'default': dj_database_url.config(
-#         default=os.getenv('DATABASE_URL')
-#     )
-    
-# }
 
 CHANNEL_LAYERS = {
     'default': {
@@ -136,15 +131,15 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
 # CHANNEL_LAYERS = {
 #     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',  # Use Redis as the channel layer backend
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
 #         'CONFIG': {
-#             'hosts': [('localhost', 6379)],  # Adjust the host and port as per your Redis configuration
+#             "hosts": [('127.0.0.1', 6379)],
 #         },
 #     },
 # }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

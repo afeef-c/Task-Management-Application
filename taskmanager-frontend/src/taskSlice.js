@@ -21,12 +21,13 @@ export const createTask = createAsyncThunk('tasks/createTask', async (taskData, 
   }
 });
 
+// Async thunk to update a task
 export const updateTask = createAsyncThunk('tasks/updateTask', async ({ id, ...taskData }, { rejectWithValue }) => {
   try {
-      const response = await api.put(`/tasks/${id}/`, taskData); // Assuming PUT method
-      return response.data;
+    const response = await api.put(`/tasks/${id}/`, taskData); // Assuming PUT method
+    return response.data;
   } catch (error) {
-      return rejectWithValue(error.response?.data || 'Failed to update task');
+    return rejectWithValue(error.response?.data || 'Failed to update task');
   }
 });
 
@@ -51,7 +52,21 @@ const initialState = {
 const taskSlice = createSlice({
   name: 'tasks',
   initialState,
-  reducers: {},
+  reducers: {
+    // WebSocket: Add new task
+    addTask: (state, action) => {
+      state.tasks.push(action.payload); // Add task to the tasks array
+    },
+    updateTaskWS: (state, action) => {
+        const index = state.tasks.findIndex(task => task.id === action.payload.id);
+        if (index !== -1) {
+            state.tasks[index] = action.payload; // Update task in the tasks array
+        }
+    },
+    removeTask: (state, action) => {
+        state.tasks = state.tasks.filter(task => task.id !== action.payload); // Remove task from the tasks array
+    },
+  },
   extraReducers: (builder) => {
     // Fetch tasks
     builder.addCase(fetchTasks.pending, (state) => {
@@ -80,15 +95,13 @@ const taskSlice = createSlice({
       state.error = action.payload;  // Store error if creation fails
     });
 
-    // update task
-    
-    
+    // Update task
     builder.addCase(updateTask.fulfilled, (state, action) => {
-        state.loading = false;
-        const index = state.tasks.findIndex(task => task.id === action.payload.id);
-        if (index !== -1) {
-            state.tasks[index] = action.payload;  // Update the task in the state
-        }
+      state.loading = false;
+      const index = state.tasks.findIndex(task => task.id === action.payload.id);
+      if (index !== -1) {
+        state.tasks[index] = action.payload;  // Update the task in the state
+      }
     });
 
     // Delete task
@@ -100,6 +113,9 @@ const taskSlice = createSlice({
     });
   },
 });
+
+// Export WebSocket actions to handle task creation, update, and deletion
+export const { addTask, updateTaskWS, removeTask } = taskSlice.actions;
 
 // Export the reducer
 export default taskSlice.reducer;

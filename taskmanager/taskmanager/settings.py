@@ -96,7 +96,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:5173',
     'http://localhost:8000',
     'https://task-management-application-kvvw.onrender.com',
-    'https://taskmanager-wfqi.onrender.com'
+    'https://taskmanager-wfqi.onrender.com',
 
 ]
 CSRF_TRUSTED_ORIGINS = [

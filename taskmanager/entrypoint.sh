@@ -23,10 +23,9 @@ echo "Collecting static files..."
 echo "Starting Nginx..."
 nginx &
 
-# Start the application server with Daphne (for ASGI and WebSockets)
+# Start the Daphne ASGI server for WebSockets and HTTP
 echo "Starting Daphne ASGI server..."
 /py/bin/daphne -b 0.0.0.0 -p $PORT taskmanager.asgi:application
-# /py/bin/daphne -b 0.0.0.0 -p 8000 taskmanager.asgi:application
 
 # Alternatively, if using Gunicorn for WSGI applications, use this:
 # echo "Starting Gunicorn server..."

@@ -40,11 +40,11 @@ RUN mkdir -p /media
 # Copy Nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Collect static files (assuming AWS S3 or similar is configured in Django settings)
-ARG SECRET_KEY
 # Pass SECRET_KEY as an environment variable
+ARG SECRET_KEY
 ENV SECRET_KEY=${SECRET_KEY}
 
+# Collect static files (assuming AWS S3 or similar is configured in Django settings)
 RUN /py/bin/python manage.py collectstatic --noinput
 
 # Copy the entrypoint script and make it executable

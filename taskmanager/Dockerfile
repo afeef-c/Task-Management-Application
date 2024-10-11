@@ -41,9 +41,9 @@ RUN mkdir -p /media
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Collect static files (assuming AWS S3 or similar is configured in Django settings)
-# Using ARG to set SECRET_KEY
 ARG SECRET_KEY
-ENV SECRET_KEY=${SECRET_KEY}  # Pass SECRET_KEY as an environment variable
+# Pass SECRET_KEY as an environment variable
+ENV SECRET_KEY=${SECRET_KEY}
 
 RUN /py/bin/python manage.py collectstatic --noinput
 

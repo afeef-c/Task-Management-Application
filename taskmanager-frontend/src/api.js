@@ -18,9 +18,35 @@ api.interceptors.request.use(
     }
 )
 
+
+
 export const connectWebSocket = () => {
-    const socket = new WebSocket(import.meta.env.VITE_WS_URL || "ws://localhost:8000/ws/tasks/");
-    return socket;
+    const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8000/ws/tasks/";
+    let socket;
+
+    try {
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = () => {
+            console.log("WebSocket connection established");
+        };
+
+        socket.onerror = (error) => {
+            console.error("WebSocket error:", error);
+            // Try to reconnect after some delay if needed
+        };
+
+        socket.onclose = (event) => {
+            console.log(`WebSocket closed: ${event.code}, reason: ${event.reason}`);
+            // Optionally implement reconnection logic here
+        };
+        
+        return socket;
+
+    } catch (error) {
+        console.error("Failed to connect WebSocket:", error);
+        // Handle connection failure, show UI notification, etc.
+    }
 };
 
 

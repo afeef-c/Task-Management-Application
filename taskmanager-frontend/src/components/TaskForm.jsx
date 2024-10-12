@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { createTask, updateTask } from '../taskSlice';
+import { createTask, fetchTasks, updateTask } from '../taskSlice';
 import { fetchUserDetails, fetchUsers } from '../authSlice';
 import { addTask, updateTaskWS, removeTask } from '../taskSlice';
 import { connectWebSocket } from '../api';
@@ -9,17 +9,17 @@ import { toast } from 'react-toastify';
 const TaskForm = ({ taskToEdit, onTaskCreated }) => {
     const dispatch = useDispatch();
     const { loading, error } = useSelector((state) => state.tasks);
+    const user = useSelector((state) => state.auth.user);
+    const users = useSelector((state) => state.auth.users); // Fetching users from Redux state
+    const authTokens = useSelector((state) => state.auth.authTokens);
 
     const [title, setTitle] = useState('');
     const [assignedUser, setAssignedUser] = useState('');
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState('TODO');
-    const [dueDate, setDueDate] = useState(''); // New due date field
+    const [dueDate, setDueDate] = useState('');
 
-    const user = useSelector((state) => state.auth.user);
-    const users = useSelector((state) => state.auth.users);
-    const authTokens = useSelector((state) => state.auth.authTokens);
-
+    // Fetch user details and users
     useEffect(() => {
         if (authTokens) {
             dispatch(fetchUserDetails());
@@ -37,48 +37,52 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
         if (taskToEdit) {
             setTitle(taskToEdit.title || '');
             setDescription(taskToEdit.description || '');
-            setAssignedUser(taskToEdit.user?.id || ''); // Set user ID directly
+            setAssignedUser(taskToEdit.assigned_user || ''); // Ensure this uses the correct field
             setStatus(taskToEdit.status || 'TODO');
-            setDueDate(taskToEdit.due_date || ''); // Pre-fill due date
+            setDueDate(taskToEdit.due_date || '');
         } else {
+            // Reset form
             setTitle('');
             setDescription('');
             setAssignedUser('');
             setStatus('TODO');
-            setDueDate(''); // Reset due date
+            setDueDate('');
         }
     }, [taskToEdit]);
 
     useEffect(() => {
-        // Establish WebSocket connection
-        const socket = connectWebSocket()
-
-        // const socket = new WebSocket('ws://localhost:8000/ws/tasks/'); // Update with your WebSocket URL
-
-        // Handle incoming WebSocket messages
+        const socket = connectWebSocket();
+    
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            console.log('WebSocket message received: ', event.data);
-            // Handle different task events
+            console.log('WebSocket message received: ', data);
+    
             if (data.type === 'task.create') {
+                // Only add task if it belongs to the current user or if the user is an admin
+                
                 dispatch(addTask(data.task)); // Add the new task to Redux state
+                
             } else if (data.type === 'task.update') {
                 dispatch(updateTaskWS(data.task)); // Update the existing task in Redux state
-            } else if (data.type === 'task.delete') {
+            } else if (data.type === 'task.deleted') {
                 dispatch(removeTask(data.task_id)); // Remove the task from Redux state
             }
         };
-
-        // Cleanup WebSocket connection on component unmount
+    
         return () => {
             socket.close();
         };
-    }, [dispatch]);
-
-
+    }, [dispatch, user]);
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const task = { title, description, status, due_date: dueDate || null, assigned_user: assignedUser }; // Use 'due_date'
+        const task = {
+            title,
+            description,
+            status,
+            due_date: dueDate || null,
+            assigned_user: assignedUser,
+        };
 
         let resultAction;
         if (taskToEdit) {
@@ -89,30 +93,23 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
 
         if (createTask.fulfilled.match(resultAction) || updateTask.fulfilled.match(resultAction)) {
             onTaskCreated(resultAction.payload);
-            if (!taskToEdit) {
-                toast.success("Task created successfully!");
-            } else {
-                toast.success("Task updated successfully!");
-            }
-            // Reset form logic...
+            toast.success(`${taskToEdit ? 'Task updated' : 'Task created'} successfully!`);
             // Reset form if a new task was created
             if (!taskToEdit) {
                 setTitle('');
                 setDescription('');
                 setStatus('TODO');
                 setAssignedUser('');
-                setDueDate(''); // Reset due date after task creation
+                setDueDate('');
             }
         } else if (resultAction.error) {
             toast.error("Failed to save task. Please try again.");
-        }    
-            
-        
+        }
     };
 
     // Filter out admin users from the list
     const usersArray = users ? Object.values(users).filter(user => !user.is_superuser) : [];
-    
+
     return (
         <>
             <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">
@@ -146,9 +143,10 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
 
                 {user.is_superuser && (
                     <select 
-                        value={assignedUser}  // Set value directly to assignedUser
+                        value={assignedUser}
                         onChange={(e) => setAssignedUser(e.target.value)} 
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={!!taskToEdit} // Disable if in edit mode
                         required
                     >
                         <option value="">Select User</option>
@@ -160,8 +158,7 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
                     </select>
                 )}
 
-                {/* Due Date input */}
-                <label htmlFor="dueDate"  className="block text-sm font-medium text-gray-700 mb-2">Add due date if any (Optional)</label>
+                <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-2">Add due date if any (Optional)</label>
                 <input
                     type="date"
                     value={dueDate}

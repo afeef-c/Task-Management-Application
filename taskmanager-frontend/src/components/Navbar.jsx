@@ -14,7 +14,7 @@ const Navbar = () => {
             dispatch(fetchUserDetails());
         }
     }, [authTokens, dispatch]);
-    console.log(user)
+    
     return (
         
         <nav className="bg-gray-900 p-4 flex max-w-screen-lg items-center justify-between px-4 py-2 mx-auto   sticky top-3 shadow lg:px-8 lg:py-3 backdrop-blur-lg backdrop-saturate-150 z-[9999]">

@@ -3,7 +3,6 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from './constants';
 import { decodeToken } from './utils/decodeToken';
 import { isTokenExpired } from './utils/isTokenExpired';
 import api from './api';
-import jwt_decode from 'jwt-decode';
 
 export const loginUser = createAsyncThunk('auth/loginUser', async ({ username, password }, thunkAPI) => {
   try {
@@ -75,24 +74,6 @@ export const fetchUsers = createAsyncThunk('auth/fetchUsers', async () => {
   const usersData = response.data;
   return usersData;
 });
-
-// Utility function to get the user ID from the access token
-export const getUserId = (state) => {
-  const authTokens = state.auth.authTokens; // Access the authTokens from the Redux state
-
-  if (authTokens && authTokens.access) {
-    try {
-      const decodedToken = jwt_decode(authTokens.access); // Decode the JWT token
-      return decodedToken.user_id; // Extract the user ID from the decoded token (ensure your token contains 'user_id')
-    } catch (error) {
-      console.error('Error decoding token:', error);
-      return null; // Handle cases where decoding fails
-    }
-  }
-
-  return null; // Return null if there are no tokens or the token doesn't have user info
-};
-
 
 const authSlice = createSlice({
   name: 'auth',

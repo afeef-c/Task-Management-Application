@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from './api';  // Import the Axios instance
-import { getUserId } from './authSlice';
 
 // Async thunk to get tasks
 export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async (_, { rejectWithValue }) => {
@@ -57,12 +56,10 @@ const taskSlice = createSlice({
     // WebSocket: Add new task
     addTask: (state, action) => {
       
-      const currentUser = getUserId();  // Get the current user's ID
 
       // Only add the task if the user is the task's assigned user or the user is an admin
-      if (currentUser === action.payload.user.id || action.payload.user.is_staff) {
-        state.tasks.push(action.payload);
-      }
+      state.tasks.push(action.payload);
+    
     },
     updateTaskWS: (state, action) => {
         const index = state.tasks.findIndex(task => task.id === action.payload.id);

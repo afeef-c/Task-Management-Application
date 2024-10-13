@@ -21,7 +21,7 @@ api.interceptors.request.use(
 
 
 export const connectWebSocket = () => {
-    const wsUrl = import.meta.env.VITE_WS_URL || "wss://taskmanager-wfqi.onrender.com/ws/tasks/";
+    const wsUrl = import.meta.env.VITE_WS_URL || "ws://taskmanager-wfqi.onrender.com/ws/tasks/";
     let socket;
 
     try {

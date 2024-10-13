@@ -101,7 +101,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
         # Prepare the WebSocket message
         if action != 'delete':
-            user_data = UserSerializer(task.user).data.username
+            user_data = UserSerializer(task.user).data
             message = {
                 'type': f'task.{action}',
                 'task': {

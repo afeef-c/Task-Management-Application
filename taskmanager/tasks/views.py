@@ -51,6 +51,8 @@ class UsersView(generics.ListCreateAPIView):
     
 
 
+
+
 class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -60,7 +62,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         if self.request.user.is_staff or self.request.user.is_superuser:
             return Task.objects.all().order_by('-created_at')
         return Task.objects.filter(user=self.request.user).order_by('-created_at')
-
+    
     def perform_create(self, serializer):
         if self.request.user.is_staff or self.request.user.is_superuser:
             user_id = self.request.data.get('assigned_user', None)
@@ -80,9 +82,12 @@ class TaskViewSet(viewsets.ModelViewSet):
         self.send_task_update('create', task)
 
     def perform_update(self, serializer):
-        task = serializer.save()
-        # Send WebSocket message for task update
-        self.send_task_update('update', task)
+        try:
+            task = serializer.save()
+            # Send WebSocket message for task update
+            self.send_task_update('update', task)
+        except Exception as e:
+            raise ValidationError({"error": str(e)})
 
     def perform_destroy(self, instance):
         task_id = instance.id
@@ -96,7 +101,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
         # Prepare the WebSocket message
         if action != 'delete':
-            user_data = UserSerializer(task.user).data
+            user_data = UserSerializer(task.user).data.username
             message = {
                 'type': f'task.{action}',
                 'task': {
@@ -104,7 +109,7 @@ class TaskViewSet(viewsets.ModelViewSet):
                     'title': task.title,
                     'description': task.description,
                     'status': task.status,
-                    'user': user_data,
+                    'user': user_data,  # Ensure this line is active
                     'created_at': task.created_at.isoformat(),
                     'updated_at': task.updated_at.isoformat(),
                     'due_date': task.due_date.isoformat() if task.due_date else None,
@@ -114,23 +119,14 @@ class TaskViewSet(viewsets.ModelViewSet):
         else:
             message = {
                 'type': 'task.deleted',
-                'task_id': task  # Only need the task ID for deletion
+                'task_id': task_id  # Only need the task ID for deletion
             }
 
-        # Send the WebSocket message to the assigned user and admin (staff or superuser)
-        groups = [f'user_{task.user.id}']  # Always notify the assigned user
-
-        # Send to all admins via an admin group
-        groups.append('admin_group')
-
-        # Send the message to each relevant group
-        for group in groups:
-            async_to_sync(channel_layer.group_send)(group, {
-                'type': 'task_update',
-                'message': message
-            })
-
-
+        # Broadcast the message to the WebSocket group 'task_updates'
+        async_to_sync(channel_layer.group_send)('task_updates', {
+            'type': 'task_update',
+            'message': message
+        })
 @api_view(['GET'])
 def task_statistics(request):
     # Check if the user is a superuser

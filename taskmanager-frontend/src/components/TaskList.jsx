@@ -33,21 +33,19 @@ const TaskList = ({ onEdit }) => {
             console.log('WebSocket message received: ', data);
     
             if (data.type === 'task.create') {
-                // Only add task if it belongs to the current user or if the user is an admin
-                dispatch(addTask(data.task)); // Add the new task to Redux state
-                
+                dispatch(addTask(data.task));
             } else if (data.type === 'task.update') {
-                dispatch(updateTaskWS(data.task)); // Update the existing task in Redux state
+                dispatch(updateTaskWS(data.task));
             } else if (data.type === 'task.deleted') {
-                dispatch(removeTask(data.task_id)); // Remove the task from Redux state
+                dispatch(removeTask(data.task_id));
             }
         };
     
         return () => {
             socket.close();
         };
-    }, [dispatch, user.id, user.is_superuser]);
-    
+    }, [dispatch]);
+
     const handleDelete = async (id) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this task?");
         if (confirmDelete) {
@@ -58,13 +56,29 @@ const TaskList = ({ onEdit }) => {
 
     const currentDate = new Date();
 
-    const filteredTasks = tasks.filter((task) => {
-        if (filter === 'all') return true;
-        if (filter === 'overdue') {
-            return task.due_date && new Date(task.due_date) < currentDate && task.status !== 'DONE';
+    const filteredTasks = tasks.reduce((acc, task) => {
+        const isAdmin = user.is_staff || user.is_superuser;
+
+        // If not an admin, ensure they only see their own tasks
+        if (!isAdmin && (typeof task.user === 'object' && task.user !== null ? task.user.username !== user.username : task.user !== user.username)) {
+            return acc;
         }
-        return task.status === filter;
-    });
+        
+        // Check for duplicates
+        if (!acc.some(t => t.id === task.id)) {
+            if (filter === 'all') {
+                acc.push(task);
+            } else if (filter === 'overdue') {
+                if (task.due_date && new Date(task.due_date) < currentDate && task.status !== 'DONE') {
+                    acc.push(task);
+                }
+            } else if (task.status === filter) {
+                acc.push(task);
+            }
+        }
+
+        return acc;
+    }, []);
 
     const navCategories = [
         { key: 'all', label: 'All Tasks' },
@@ -146,7 +160,10 @@ const TaskList = ({ onEdit }) => {
                                             </div>
                                             {user.is_superuser && (
                                                 <div className="flex space-x-4">
-                                                    <p className='text-xs text-gray-500'> Assigned user: <br />{task.user}</p>
+                                                    <p className='text-xs text-gray-500'>
+                                                        Assigned user: <br />
+                                                        {typeof task.user === 'object' && task.user !== null ? task.user.username : task.user}
+                                                    </p>
                                                 </div>
                                             )}
                                         </div>

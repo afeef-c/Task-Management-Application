@@ -50,6 +50,7 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
         }
     }, [taskToEdit]);
 
+    
     useEffect(() => {
         const socket = connectWebSocket();
     
@@ -58,15 +59,16 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
             console.log('WebSocket message received: ', data);
     
             if (data.type === 'task.create') {
-                // Only add task if it belongs to the current user or if the user is an admin
-                
-                dispatch(addTask(data.task)); // Add the new task to Redux state
-                
+                console.log('Task created:', data.task);
+                dispatch(addTask(data.task));
             } else if (data.type === 'task.update') {
-                dispatch(updateTaskWS(data.task)); // Update the existing task in Redux state
+                console.log('Task updated:', data.task);
+                dispatch(updateTaskWS(data.task));
             } else if (data.type === 'task.deleted') {
-                dispatch(removeTask(data.task_id)); // Remove the task from Redux state
+                console.log('Task deleted ID:', data.task_id);
+                dispatch(removeTask(data.task_id));
             }
+            
         };
     
         return () => {

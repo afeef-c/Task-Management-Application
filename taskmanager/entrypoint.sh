@@ -30,3 +30,10 @@ echo "Starting Daphne ASGI server..."
 # Alternatively, if using Gunicorn for WSGI applications, use this:
 # echo "Starting Gunicorn server..."
 # /py/bin/gunicorn taskmanager.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 120
+
+
+
+
+
+
+# daphne -v 2 -b 0.0.0.0 -p 8000  taskmanager.asgi:application

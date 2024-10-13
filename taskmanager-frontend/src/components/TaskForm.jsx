@@ -50,7 +50,6 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
         }
     }, [taskToEdit]);
 
-    
     useEffect(() => {
         const socket = connectWebSocket();
     

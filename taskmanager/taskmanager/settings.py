@@ -92,11 +92,11 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 CORS_ALLOWED_ORIGINS = [
+    'https://task-management-application-kvvw.onrender.com',
+    'https://taskmanager-wfqi.onrender.com',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
     'http://localhost:8000',
-    'https://task-management-application-kvvw.onrender.com',
-    'https://taskmanager-wfqi.onrender.com',
 
 ]
 CSRF_TRUSTED_ORIGINS = [

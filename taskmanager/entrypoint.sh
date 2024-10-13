@@ -24,8 +24,8 @@ echo "Starting Nginx..."
 nginx &
 
 # Start the Daphne ASGI server for WebSockets and HTTP
-echo "Starting Daphne ASGI server..."
-/py/bin/daphne -b 0.0.0.0 -p $PORT taskmanager.asgi:application
+echo "Starting Daphne ASGI server on port 8000..."
+/py/bin/daphne -b 0.0.0.0 -p 8000 taskmanager.asgi:application
 
 # Alternatively, if using Gunicorn for WSGI applications, use this:
 # echo "Starting Gunicorn server..."

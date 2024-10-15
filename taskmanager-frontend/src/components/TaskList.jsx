@@ -98,7 +98,6 @@ const TaskList = ({ onEdit }) => {
         }
         onEdit(task);
     };
-    
     return (
         <>
             {/* Task Form Section (Reference) */}
@@ -111,13 +110,13 @@ const TaskList = ({ onEdit }) => {
                 {/* Navigation to switch between task list and statistics */}
                 <nav className="mb-6 flex space-x-4 justify-center">
                     <button
-                        className={`px-6 py-2 text-lg font-semibold rounded-full border-2 ${view === 'tasks' ? 'bg-white border-green-300 text-green-700' : 'bg-grey-500 border-grey-500 text-black'} hover:bg-green-600 hover:border-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-200`}
+                        className={`px-6 py-2 text-lg font-semibold rounded-full border-2 ${view === 'tasks' ? 'bg-white border-green-300 text-green-700' : 'bg-grey-500 border-grey-500 text-black'} hover:bg-green-600 hover:border-cyan-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 transition duration-200`}
                         onClick={() => setView('tasks')}
                     >
                         Task List
                     </button>
                     <button
-                        className={`px-6 py-2 text-lg font-semibold rounded-full border-2 ${view === 'statistics' ? 'bg-white border-green-300 text-gray-700' : 'bg-grey-500 border-grey-500 text-black'} hover:bg-green-600 hover:border-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-200`}
+                        className={`px-6 py-2 text-lg font-semibold rounded-full border-2 ${view === 'statistics' ? 'bg-white border-green-300 text-gray-700' : 'bg-grey-500 border-grey-500 text-black'} hover:bg-green-600 hover:border-cyan-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 transition duration-200`}
                         onClick={() => setView('statistics')}
                     >
                         Task Statistics
@@ -131,7 +130,7 @@ const TaskList = ({ onEdit }) => {
                             {navCategories.map((category) => (
                                 <button
                                     key={category.key}
-                                    className={`px-4 py-2 rounded-lg shadow ${filter === category.key ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-600 hover:text-white transition duration-200`}
+                                    className={`px-4 py-2 rounded-lg shadow ${filter === category.key ? 'bg-cyan-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-cyan-600 hover:text-white transition duration-200`}
                                     onClick={() => setFilter(category.key)}
                                 >
                                     {category.label}
@@ -139,7 +138,7 @@ const TaskList = ({ onEdit }) => {
                             ))}
                         </nav>
 
-                        {loading && <p className="text-blue-500">Loading tasks...</p>}
+                        {loading && <p className="text-cyan-500">Loading tasks...</p>}
                         {error && <p className="text-red-500 mb-4">{typeof error === 'string' ? error : error.detail || 'An unknown error occurred.'}</p>}
 
                         {!filteredTasks.length ? (
@@ -177,8 +176,11 @@ const TaskList = ({ onEdit }) => {
 
                                                     <p className="text-xs text-yellow-400">
                                                         Created on: {new Date(task.created_at).toLocaleDateString()}<br />
-                                                        Due by: {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
+                                                        Due by: {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}<br/>
+                                                        Completed by: {task.completed_at ? new Date(task.completed_at).toLocaleDateString() : 'Not yet finished'}
+                                                        
                                                     </p>
+                                                    
                                                 </div>
 
                                                 <div className="flex space-x-4">
@@ -189,7 +191,7 @@ const TaskList = ({ onEdit }) => {
                                                                 e.stopPropagation(); // Prevent toggle on button click
                                                                 handleEditClick(task);
                                                             }}
-                                                            className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition duration-200"
+                                                            className="bg-cyan-500 text-white px-4 py-2 rounded-lg shadow hover:bg-cyan-600 transition duration-200"
                                                         >
                                                             Edit
                                                         </button>

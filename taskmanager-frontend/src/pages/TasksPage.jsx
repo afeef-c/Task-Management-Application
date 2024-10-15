@@ -7,8 +7,7 @@ const TasksPage = () => {
     const [isFormVisible, setIsFormVisible] = useState(false);
 
     const handleCreateTask = () => {
-
-        setIsFormVisible(!(isFormVisible)); // Show the form
+        setIsFormVisible(!isFormVisible); // Show the form
     };
 
     const handleEditTask = (task) => {
@@ -22,15 +21,15 @@ const TasksPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col items-center py-6">
-            <div className="w-full max-w-screen-lg bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900 to-black flex flex-col items-center py-6">
+            <div className="w-full max-w-screen-lg bg-gray-800 bg-opacity-90 rounded-lg shadow-lg p-6 mb-6 ">
                 {/* Button to create a new task */}
                 <div className="flex justify-between mb-4">
                     <button 
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                        className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700"
                         onClick={handleCreateTask}
                     >
-                        {isFormVisible? 'X' :"Create Task"}
+                        {isFormVisible ? 'X' : "Create Task"}
                     </button>
                 </div>
 

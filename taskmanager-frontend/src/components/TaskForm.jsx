@@ -123,19 +123,19 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
                 <textarea
                     placeholder="Description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
                 <select 
                     value={status} 
                     onChange={(e) => setStatus(e.target.value)} 
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                     <option value="TODO">TODO</option>
                     <option value="IN_PROGRESS">IN_PROGRESS</option>
@@ -146,7 +146,7 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
                     <select 
                         value={assignedUser}
                         onChange={(e) => setAssignedUser(e.target.value)} 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                         disabled={!!taskToEdit} // Disable if in edit mode
                         required
                     >
@@ -164,13 +164,13 @@ const TaskForm = ({ taskToEdit, onTaskCreated }) => {
                     type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
 
                 <button
                     type="submit"
                     disabled={loading}
-                    className={`w-full py-2 px-4 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
+                    className={`w-full py-2 px-4 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${loading ? 'bg-gray-400' : 'bg-teal-500 hover:bg-teal-600'}`}
                 >
                     {loading ? 'Saving...' : taskToEdit ? 'Update Task' : 'Save Task'}
                 </button>

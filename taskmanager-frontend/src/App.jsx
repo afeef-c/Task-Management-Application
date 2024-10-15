@@ -10,36 +10,48 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import TaskStatistics from './components/TaskStatistics';
 
+const PrivateRoute = ({ user, children }) => {
+    return user ? children : <Navigate to="/login" />;
+};
+
 function App() {
     const user = useSelector((state) => state.auth.user);  // Use user from Redux store
     const dispatch = useDispatch();
     const authTokens = useSelector((state) => state.auth.authTokens);
+
     useEffect(() => {
         if (authTokens) {
             dispatch(fetchUserDetails());
         }
     }, [authTokens, dispatch]);
-    
 
     return (
-        <Router>
-            <Navbar/>
-            <Routes>
-                {/* Redirect to tasks if user is authenticated, otherwise show Login */}
-                <Route path="/login" element={!user ? <Login /> : <Navigate to="/tasks" />}/>
+        <>
+            <ToastContainer /> {/* Moved outside Router to ensure it always renders */}
+            <Router>
+                <Navbar />
+                <Routes>
+                    {/* Login Route */}
+                    <Route path="/login" element={!user ? <Login /> : <Navigate to="/tasks" />} />
 
-                {/* Registration page is always accessible */}
-                <Route path="/register" element={<Register />} />
+                    {/* Register Route */}
+                    <Route path="/register" element={<Register />} />
 
-                {/* If authenticated, show tasks page; otherwise redirect to login */}
-                <Route path="/tasks" element={user ? <TasksPage /> : <Navigate to="/login" />}/>
-                <Route path="/statistics" element={user ? <TaskStatistics /> : <Navigate to="/login" />}/>
-                
-                {/* Catch-all route to redirect users */}
-                <Route path="*" element={<Navigate to={user ? "/tasks" : "/login"} />} />
-            </Routes>
-            <ToastContainer />
-        </Router>
+                    {/* Protected Routes */}
+                    <Route 
+                        path="/tasks" 
+                        element={<PrivateRoute user={user}><TasksPage /></PrivateRoute>} 
+                    />
+                    <Route 
+                        path="/statistics" 
+                        element={<PrivateRoute user={user}><TaskStatistics /></PrivateRoute>} 
+                    />
+
+                    {/* Catch-all route */}
+                    <Route path="*" element={<Navigate to={user ? "/tasks" : "/login"} />} />
+                </Routes>
+            </Router>
+        </>
     );
 }
 

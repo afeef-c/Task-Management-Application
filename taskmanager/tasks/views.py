@@ -93,14 +93,14 @@ class TaskViewSet(viewsets.ModelViewSet):
         task_id = instance.id
         instance.delete()
         # Send WebSocket message for task deletion
-        self.send_task_update('delete', task_id)
+        self.send_task_update('delete', task_id=task_id)
 
-    def send_task_update(self, action, task):
+    def send_task_update(self, action, task=None, task_id=None):
         # Set up the channel layer for WebSocket communication
         channel_layer = get_channel_layer()
 
         # Prepare the WebSocket message
-        if action != 'delete':
+        if action != 'delete' and task is not None:
             user_data = UserSerializer(task.user).data
             message = {
                 'type': f'task.{action}',
@@ -116,7 +116,7 @@ class TaskViewSet(viewsets.ModelViewSet):
                     'completed_at': task.completed_at.isoformat() if task.completed_at else None,
                 }
             }
-        else:
+        elif task_id is not None:
             message = {
                 'type': 'task.deleted',
                 'task_id': task_id  # Only need the task ID for deletion
@@ -127,6 +127,9 @@ class TaskViewSet(viewsets.ModelViewSet):
             'type': 'task_update',
             'message': message
         })
+
+
+
 @api_view(['GET'])
 def task_statistics(request):
     # Check if the user is a superuser

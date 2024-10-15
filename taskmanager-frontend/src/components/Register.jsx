@@ -47,7 +47,8 @@ const Register = () => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900 to-black flex flex-col items-center py-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 via-purple-900 to-black flex flex-col p-6">
       <div className="w-full max-w-lg p-8 bg-white rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Register</h2>
           
@@ -59,7 +60,7 @@ const Register = () => {
                   value={userData.username}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
               <input
                   type="password"
@@ -68,12 +69,12 @@ const Register = () => {
                   value={userData.password}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
               <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="w-full py-2 px-4 bg-teal-500 text-white rounded-lg hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                   {loading ? 'Registering...' : 'Register'}
               </button>
@@ -94,6 +95,7 @@ const Register = () => {
               </button>
           </div>
       </div>
+    </div>
     </div>
   );
 };

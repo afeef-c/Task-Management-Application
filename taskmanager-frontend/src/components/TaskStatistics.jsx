@@ -26,7 +26,7 @@ const TaskStatistics = () => {
 
         fetchStats();
     }, []);
-
+    
     const chartData = {
         labels: ['Completed', 'Pending', 'In Progress', 'Overdue'],
         datasets: [
